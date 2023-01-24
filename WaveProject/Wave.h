@@ -10,6 +10,8 @@ class Wave
 public:
 	Wave(std::string file_path);
 	void createWave();
+	void print();
+	void createWave();
 
 };
 
