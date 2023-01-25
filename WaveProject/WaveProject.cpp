@@ -7,4 +7,6 @@ int main()
 	Wave p("Text.txt");
 	p.print();
 	p.createWave();
+	p.createPath();
+	p.print();
 }

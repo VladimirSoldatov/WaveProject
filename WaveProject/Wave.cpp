@@ -2,13 +2,15 @@
 #include<fstream>
 #include<string>
 #include<vector>
+#include<algorithm>
 using namespace std;
 
-vector<Cell> diff{ {0, -1},{0,-1},{0,1},{1,0} };
+vector<Cell> diff{ {0, -1},{0,1},{-1,0},{1,0} };
 Wave::Wave(std::string file_path)
 {
+	int steps = 0;
 	std::cout<< "Ok\n";
-	//path//
+	path = vector<Cell>();
 	string str;
 	fstream file;
 	file.open("Text.txt", ios::in);
@@ -59,11 +61,11 @@ void Wave::createWave()
 	bool indexCurrentFront{ false };
 	int countFronts = 0;
 	fronts[indexCurrentFront].push_back(start);
-	bool flag{ false };
+	isFinish = false;
 	while (true)
 	{
 		fronts[!indexCurrentFront].clear();
-		countFronts++;
+		steps++;
 		for (auto cell : fronts[indexCurrentFront])
 		{
 			int row = cell.Row();
@@ -74,34 +76,40 @@ void Wave::createWave()
 				int currentRow = row + diff[i].Row();
 				if (matrix[currentRow][currentCol].Value() == CellType::Finish)
 				{
-					matrix[currentRow][currentCol].Value() = countFronts;
-					flag = true;
+					//matrix[currentRow][currentCol].Value() = steps;
+					isFinish = true;
+					print();
 					break;
 
 				}
 				if (matrix[currentRow][currentCol].Value() == CellType::Space)
 				{
-					matrix[currentRow][currentCol].Value() = countFronts;
+					matrix[currentRow][currentCol].Value() = steps;
 					fronts[!indexCurrentFront].push_back(Cell(currentRow, currentCol));
 
 				}
 			}
-			if (flag)
+			if (isFinish)
 				break;
 
 		}
-		if (flag)
+		if (isFinish)
 			break;
 		indexCurrentFront = !indexCurrentFront;
 		print();
 	}
+	
 }
+
 
 void Wave::print()
 {
 	cout << "\n";
+	int row = 0;
+	int column;
 	for (auto rows : matrix)
 	{
+		column = 0;
 		for (auto columns : rows)
 		{
 			switch ((CellType)columns.Value())
@@ -119,10 +127,56 @@ void Wave::print()
 				cout << 'F';
 				break;
 			default:
-				cout << columns.Value();
+				if (path.size())
+				{
+					auto result = find_if(path.begin(), path.end(), [row, column](auto cell)
+						{
+							return row == cell.Row() && column == cell.Column();
+						});
+					if (result != path.end())
+					{
+						cout << columns.Value();
+					}
+					else
+					{
+						cout << " ";
+					}
+				}
+				else
+					cout << columns.Value();
 				break;
 			}
+			column++;
 		}
+		row++;
 		cout << "\n";
+	}
+}
+
+void Wave::createPath()
+{
+	if (!isFinish)
+		return;
+	path.push_back(finish);
+
+	int numberWave = steps;
+	while (numberWave)
+	{
+		int row = path.back().Row();
+		int col = path.back().Column();
+		for (int i = 0; i < diff.size(); i++)
+		{
+			int drow = row + diff[i].Row();
+			int dcol = col + diff[i].Column();
+			int curValue = matrix[drow][dcol].Value();
+			if (curValue == numberWave - 1)
+			{
+				numberWave--;
+				path.push_back(Cell(drow, dcol, numberWave));
+			
+				break;
+			}
+
+		}
 	}
 }
