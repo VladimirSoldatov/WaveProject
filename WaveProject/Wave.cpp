@@ -3,6 +3,7 @@
 #include<string>
 #include<vector>
 #include<algorithm>
+#include<iomanip>
 using namespace std;
 
 vector<Cell> diff{ {0, -1},{0,1},{-1,0},{1,0} };
@@ -19,7 +20,7 @@ Wave::Wave(std::string file_path)
 	{
 	getline(file, str);
 	cout << str << endl;
-	int code;
+	int code = 0;
 	int columns{};
 	vector<Cell> line;
 		while (str[columns])
@@ -62,14 +63,17 @@ void Wave::createWave()
 	int countFronts = 0;
 	fronts[indexCurrentFront].push_back(start);
 	isFinish = false;
+	int row = -5;
+	int column = -5;
 	while (true)
 	{
 		fronts[!indexCurrentFront].clear();
 		steps++;
 		for (auto cell : fronts[indexCurrentFront])
 		{
-			int row = cell.Row();
-			int column = cell.Column();
+	
+			row = cell.Row();
+			column = cell.Column();
 			for (int i = 0; i < diff.size(); i++)
 			{
 				int currentCol = column + diff[i].Column();
@@ -95,6 +99,11 @@ void Wave::createWave()
 		}
 		if (isFinish)
 			break;
+		if (fronts->size() == 0)
+		{
+			cout << "No variant\n";
+			return;
+		}
 		indexCurrentFront = !indexCurrentFront;
 		print();
 	}
@@ -104,6 +113,7 @@ void Wave::createWave()
 
 void Wave::print()
 {
+
 	cout << "\n";
 	int row = 0;
 	int column;
@@ -115,35 +125,36 @@ void Wave::print()
 			switch ((CellType)columns.Value())
 			{
 			case CellType::Space:
-				cout << ' ';
+				cout << setw(2)<< ' ';
 				break;
 			case CellType::Start:
-				cout << 'S';
+				cout << setw(2) << 'S';
 				break;
 			case CellType::Wall:
-				cout << (char)-78;
+				cout << (char)-78 << (char)-78;
 				break;
 			case CellType::Finish:
-				cout << 'F';
+				cout << setw(2) << 'F';
 				break;
 			default:
 				if (path.size())
 				{
-					auto result = find_if(path.begin(), path.end(), [row, column](auto cell)
+					vector<Cell>::iterator result = find_if(path.begin(), path.end(),
+						[row, column](auto cell)
 						{
 							return row == cell.Row() && column == cell.Column();
-						});
+						}); //Предикат - это лямда функция которая возращает истина или ложь
 					if (result != path.end())
 					{
-						cout << columns.Value();
+						cout << setw(2) << columns.Value();
 					}
 					else
 					{
-						cout << " ";
+						cout << setw(2) << " ";
 					}
 				}
 				else
-					cout << columns.Value();
+					cout << setw(2) << columns.Value();
 				break;
 			}
 			column++;
@@ -157,11 +168,13 @@ void Wave::createPath()
 {
 	if (!isFinish)
 		return;
+		
 	path.push_back(finish);
 
 	int numberWave = steps;
 	while (numberWave)
 	{
+		
 		int row = path.back().Row();
 		int col = path.back().Column();
 		for (int i = 0; i < diff.size(); i++)
